@@ -1,0 +1,46 @@
+﻿namespace SurveyBasket;
+
+public static class DependencyInjection
+{
+    public static IServiceCollection AddDependencies(this IServiceCollection services)
+    {
+        services.AddControllers();
+
+        services
+            .AddOpenApi()
+            .AddMapsterConfigurations()
+            .AddFluentValidationConfigurations();
+
+        services.AddScoped<IPollService, PollService>();
+
+        return services;
+    }
+
+    public static IServiceCollection AddMapsterConfigurations(this IServiceCollection services)
+    {
+
+        ////////////1st way///////
+        //TypeAdapterConfig.GlobalSettings.Scan(assemblies: typeof(MappingConfigurations).Assembly);
+
+        ////////////2nd way///////
+        var mappingConfig = TypeAdapterConfig.GlobalSettings;
+        mappingConfig.Scan(assemblies: typeof(MappingConfigurations).Assembly);
+        services.AddSingleton<IMapper>(new Mapper(mappingConfig));
+
+        ////////////3rd way///////
+        //var mappingConfig = TypeAdapterConfig.GlobalSettings;
+        //mappingConfig.Scan(Assembly.GetExecutingAssembly());
+        //services.AddSingleton<IMapper>(new Mapper(mappingConfig));
+
+        return services;
+    }
+
+    public static IServiceCollection AddFluentValidationConfigurations(this IServiceCollection services)
+    {
+        services
+            .AddFluentValidationAutoValidation()
+            .AddValidatorsFromAssemblyContaining<CreatePollRequestValidator>();
+
+        return services;
+    }
+}
