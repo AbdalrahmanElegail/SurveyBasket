@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using SurveyBasket.Persistence;
+
 namespace SurveyBasket;
 
 public class Program
@@ -7,7 +10,7 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
-        builder.Services.AddDependencies();
+        builder.Services.AddDependencies(builder.Configuration);
 
 
         var app = builder.Build();
