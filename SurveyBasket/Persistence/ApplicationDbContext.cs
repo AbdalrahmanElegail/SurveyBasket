@@ -1,6 +1,9 @@
-﻿namespace SurveyBasket.Persistence;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
+namespace SurveyBasket.Persistence;
+
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : 
+    IdentityDbContext<ApplicationUser>(options)
 {
     public DbSet<Poll> Polls { get; set; }
 

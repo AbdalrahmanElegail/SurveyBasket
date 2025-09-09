@@ -11,8 +11,7 @@ global using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 
 global using SurveyBasket.Persistence;
 global using SurveyBasket.Mapping;
-global using SurveyBasket.Contracts.Validations;
 global using SurveyBasket.Entities;
 global using SurveyBasket.Services;
-global using SurveyBasket.Contracts.Requests;
-global using SurveyBasket.Contracts.Responses;
+global using SurveyBasket.Contracts.Polls;
+global using SurveyBasket.Contracts.Authentication;

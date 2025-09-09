@@ -1,10 +1,15 @@
-﻿namespace SurveyBasket;
+﻿using Microsoft.AspNetCore.Identity;
+using SurveyBasket.Contracts.Polls;
+
+namespace SurveyBasket;
 
 public static class DependencyInjection
 {
     public static IServiceCollection AddDependencies(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddControllers();
+
+        services.AddAuthConfigurations();
 
         services.AddDb(configuration);
 
@@ -13,7 +18,11 @@ public static class DependencyInjection
             .AddMapsterConfigurations()
             .AddFluentValidationConfigurations();
 
+
+        //services.AddServices();
         services.AddScoped<IPollService, PollService>();
+        services.AddScoped<IAuthService, AuthService>();
+
 
         return services;
     }
@@ -21,7 +30,20 @@ public static class DependencyInjection
 
 
 
-    public static IServiceCollection AddDb(this IServiceCollection services, IConfiguration configuration)
+
+
+
+
+    //public static IServiceCollection AddServices(this IServiceCollection services)
+    //{
+    //    services.AddScoped<IPollService, PollService>();
+    //    services.AddScoped<IAuthService, AuthService>();
+
+    //    return services;
+    //}
+
+
+    private static IServiceCollection AddDb(this IServiceCollection services, IConfiguration configuration)
     {
         var ConnectionString = configuration.GetConnectionString("DefaultConnection") ??
             throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -32,7 +54,7 @@ public static class DependencyInjection
         return services;
     }
 
-    public static IServiceCollection AddMapsterConfigurations(this IServiceCollection services)
+    private static IServiceCollection AddMapsterConfigurations(this IServiceCollection services)
     {
 
         ////////////1st way///////
@@ -51,11 +73,19 @@ public static class DependencyInjection
         return services;
     }
 
-    public static IServiceCollection AddFluentValidationConfigurations(this IServiceCollection services)
+    private static IServiceCollection AddFluentValidationConfigurations(this IServiceCollection services)
     {
         services
             .AddFluentValidationAutoValidation()
             .AddValidatorsFromAssemblyContaining<PollRequestValidator>();
+
+        return services;
+    }
+    private static IServiceCollection AddAuthConfigurations(this IServiceCollection services)
+    {
+        services
+            .AddIdentity<ApplicationUser, IdentityRole>()
+            .AddEntityFrameworkStores<ApplicationDbContext>();
 
         return services;
     }
