@@ -2,7 +2,7 @@
 global using Microsoft.EntityFrameworkCore.Metadata.Builders;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.AspNetCore.Identity;
-global using System.Reflection;
+global using Microsoft.Extensions.Options;
 global using Mapster;
 global using MapsterMapper;
 global using Scalar.AspNetCore;
