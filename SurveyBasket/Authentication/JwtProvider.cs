@@ -1,4 +1,5 @@
 ﻿using Microsoft.IdentityModel.Tokens;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 
 namespace SurveyBasket.Authentication;
@@ -32,5 +33,30 @@ public class JwtProvider(IOptions<JwtOptions> options) : IJwtProvider
         var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
         return (token: tokenString,expiresIn: _options.ExpiryMinutes * 60); // return expiresIn in seconds
+    }
+
+    public string? ValidateToken(string token)
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.Key));
+
+        try
+        {
+            tokenHandler.ValidateToken(token, new TokenValidationParameters
+            {
+                IssuerSigningKey = symmetricSecurityKey,
+                ValidateIssuerSigningKey = true,
+                ValidateAudience = false,
+                ValidateIssuer = false,
+                ClockSkew = TimeSpan.Zero
+            },out SecurityToken validatedToken);
+
+            var jwtToken = (JwtSecurityToken) validatedToken;
+            return jwtToken.Claims.First(t=>t.Type == JwtRegisteredClaimNames.Sub).Value;
+        }
+        catch
+        {
+            return null;
+        }
     }
 }
