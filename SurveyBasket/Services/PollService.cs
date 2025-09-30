@@ -14,12 +14,14 @@ public class PollService(ApplicationDbContext context) : IPollService
     public async Task<Result<PollResponse>> GetAsync(int id, CancellationToken cancellationToken = default)
     {
         var poll = await _context.Polls.FindAsync(id, cancellationToken);
-        return poll is null ? Result.Failure<PollResponse>(PollErrors.PollNotFound) : Result.Succeed(poll.Adapt<PollResponse>());
+        return poll is null 
+            ? Result.Failure<PollResponse>(PollErrors.PollNotFound) 
+            : Result.Succeed(poll.Adapt<PollResponse>());
     }
 
     public async Task<PollResponse> AddAsync(PollRequest request, CancellationToken cancellationToken = default)
     {
-        await _context.AddAsync(request, cancellationToken);
+        await _context.AddAsync(request.Adapt<Poll>(), cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
 
         return request.Adapt<Poll>().Adapt<PollResponse>();

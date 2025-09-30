@@ -1,12 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using SurveyBasket.Abstractions;
 
 namespace SurveyBasket.Controllers;
 
-
 [Route("api/[controller]")]
 [ApiController]
-//[Authorize]
+[Authorize]
 public class PollsController(IPollService pollService) : ControllerBase
 {
     private readonly IPollService _pollService = pollService;
@@ -25,7 +23,7 @@ public class PollsController(IPollService pollService) : ControllerBase
             : Problem(statusCode: StatusCodes.Status404NotFound, title: result.Error.Code, detail: result.Error.Description);
     }
 
-    [HttpPost]
+    [HttpPost("")]
     public async Task<IActionResult> Add([FromBody] PollRequest request, CancellationToken cancellationToken)
     {
         var response = await _pollService.AddAsync(request, cancellationToken); 
