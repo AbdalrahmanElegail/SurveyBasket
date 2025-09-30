@@ -11,6 +11,9 @@ global using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 global using System.IdentityModel.Tokens.Jwt;
 global using System.Security.Claims;
 
+
+global using SurveyBasket.Errors;
+global using SurveyBasket.Abstractions;
 global using SurveyBasket.Authentication;
 global using SurveyBasket.Contracts.Polls;
 global using SurveyBasket.Persistence;
