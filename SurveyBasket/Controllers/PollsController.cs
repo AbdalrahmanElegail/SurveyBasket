@@ -4,7 +4,7 @@ namespace SurveyBasket.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-[Authorize]
+//[Authorize]
 public class PollsController(IPollService pollService) : ControllerBase
 {
     private readonly IPollService _pollService = pollService;
@@ -18,9 +18,7 @@ public class PollsController(IPollService pollService) : ControllerBase
     {
         var result = await _pollService.GetAsync(id, cancellationToken);
 
-        return result.IsSucceed
-            ? Ok(result.Value)
-            : Problem(statusCode: StatusCodes.Status404NotFound, title: result.Error.Code, detail: result.Error.Description);
+        return result.IsSucceed ? Ok(result.Value) : result.ToProblem();
     }
 
     [HttpPost("")]
@@ -36,9 +34,7 @@ public class PollsController(IPollService pollService) : ControllerBase
     {
         var result = await _pollService.UpdateAsync(id, request, cancellationToken); 
 
-        return result.IsSucceed 
-            ? NoContent() 
-            : Problem(statusCode: StatusCodes.Status404NotFound, title: result.Error.Code, detail: result.Error.Description);
+        return result.IsSucceed ? NoContent() : result.ToProblem();
     }
 
     [HttpDelete("{id}")]
@@ -46,9 +42,7 @@ public class PollsController(IPollService pollService) : ControllerBase
     {
         var result = await _pollService.DeleteAsync(id, cancellationToken);
 
-        return result.IsSucceed
-            ? NoContent()
-            : Problem(statusCode: StatusCodes.Status404NotFound, title: result.Error.Code, detail: result.Error.Description);
+        return result.IsSucceed ? NoContent() : result.ToProblem();
     }
 
     [HttpPut("{id}/togglePublish")]
@@ -56,11 +50,6 @@ public class PollsController(IPollService pollService) : ControllerBase
     {
         var result = await _pollService.TogglePublishStatusAsync(id, cancellationToken);
 
-        return result.IsSucceed
-            ? NoContent()
-            : Problem(statusCode: StatusCodes.Status404NotFound, title: result.Error.Code, detail: result.Error.Description);
+        return result.IsSucceed ? NoContent() : result.ToProblem();
     }
-
-
-
 }
