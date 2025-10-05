@@ -1,6 +1,4 @@
-﻿using SurveyBasket.Entities;
-
-namespace SurveyBasket.Services;
+﻿namespace SurveyBasket.Services;
 
 public class PollService(ApplicationDbContext context) : IPollService
 {
@@ -19,16 +17,22 @@ public class PollService(ApplicationDbContext context) : IPollService
             : Result.Succeed(poll.Adapt<PollResponse>());
     }
 
-    public async Task<PollResponse> AddAsync(PollRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result<PollResponse>> AddAsync(PollRequest request, CancellationToken cancellationToken = default)
     {
+        var isExistingTitle = await _context.Polls.AnyAsync(p => p.Title == request.Title, cancellationToken);
+        if (isExistingTitle) return Result.Failure<PollResponse>(PollErrors.DuplicatedPollTitle);
+
         await _context.AddAsync(request.Adapt<Poll>(), cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
 
-        return request.Adapt<Poll>().Adapt<PollResponse>();
+        return Result.Succeed(request.Adapt<Poll>().Adapt<PollResponse>());
     }
 
     public async Task<Result> UpdateAsync(int id, PollRequest request, CancellationToken cancellationToken = default)
     {
+        var isExistingTitle = await _context.Polls.AnyAsync(p => p.Title == request.Title && p.Id != id, cancellationToken);
+        if (isExistingTitle) return Result.Failure(PollErrors.DuplicatedPollTitle);
+
         var currentPoll = await _context.Polls.FindAsync(id, cancellationToken);
         if (currentPoll is null) return Result.Failure(PollErrors.PollNotFound);
 

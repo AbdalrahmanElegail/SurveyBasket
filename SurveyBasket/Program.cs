@@ -30,6 +30,8 @@ public class Program
 
         app.MapControllers();
 
+        app.UseExceptionHandler();
+
         app.Run();
     }
 }
