@@ -7,21 +7,16 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 {
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
+    public DbSet<Answer> Answers { get; set; }
     public DbSet<Poll> Polls { get; set; }
-
-
-
-
-
+    public DbSet<Question> Questions { get; set; }
+    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
 
         base.OnModelCreating(modelBuilder);
     }
-
-
-
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
@@ -43,11 +38,4 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
         return base.SaveChangesAsync(cancellationToken);
     }
-
-
-
-
-
-
-
 }
