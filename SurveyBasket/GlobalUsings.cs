@@ -3,13 +3,14 @@ global using Microsoft.EntityFrameworkCore.Metadata.Builders;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.AspNetCore.Identity;
 global using Microsoft.Extensions.Options;
+global using Microsoft.AspNetCore.Authorization;
+global using System.IdentityModel.Tokens.Jwt;
+global using System.Security.Claims;
 global using Mapster;
 global using MapsterMapper;
 global using Scalar.AspNetCore;
 global using FluentValidation;
 global using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
-global using System.IdentityModel.Tokens.Jwt;
-global using System.Security.Claims;
 
 
 global using SurveyBasket.Errors;
