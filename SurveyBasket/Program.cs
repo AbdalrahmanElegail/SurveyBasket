@@ -1,5 +1,4 @@
-using Microsoft.EntityFrameworkCore;
-using SurveyBasket.Persistence;
+using Serilog;
 
 namespace SurveyBasket;
 
@@ -12,6 +11,9 @@ public class Program
         // Add services to the container.
         builder.Services.AddDependencies(builder.Configuration);
 
+        builder.Host.UseSerilog((context, configuration) =>
+            configuration.ReadFrom.Configuration(context.Configuration)
+        );
 
         var app = builder.Build();
 
@@ -21,6 +23,8 @@ public class Program
             app.MapOpenApi();
             app.MapScalarApiReference();
         }
+
+        app.UseSerilogRequestLogging();
 
         app.UseHttpsRedirection();
 
