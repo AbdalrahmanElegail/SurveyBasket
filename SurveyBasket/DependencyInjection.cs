@@ -10,6 +10,9 @@ public static class DependencyInjection
     {
         services.AddControllers();
 
+        //services.AddDistributedMemoryCache();
+        services.AddHybridCache();
+
         services.AddCors(options => 
             options.AddDefaultPolicy(builder => 
                 builder
@@ -36,9 +39,10 @@ public static class DependencyInjection
         services.AddScoped<IVoteService, VoteService>();
         services.AddScoped<IResultService, ResultService>();
 
+        //services.AddScoped<ICacheService, CacheService>();
+
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();
-
 
         return services;
     }
