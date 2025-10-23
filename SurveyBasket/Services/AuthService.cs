@@ -20,6 +20,7 @@ public class AuthService(UserManager<ApplicationUser> UserManager, IJwtProvider 
 
         var refreshToken = GenerateRefreshToken();        // generate new Refresh Token
         var refreshTokenExpiration = DateTime.UtcNow.AddDays(_refreshTokenExpiryDays);
+
         user.RefreshTokens.Add(new RefreshToken 
         {
             Token = refreshToken,
@@ -27,7 +28,12 @@ public class AuthService(UserManager<ApplicationUser> UserManager, IJwtProvider 
         });
         await _userManager.UpdateAsync(user);
 
-        var response = new AuthResponse(user.Id, user.Email, user.FirstName, user.LastName, token, expiresIn, refreshToken, refreshTokenExpiration);
+        var response = new AuthResponse
+        (
+            user.Id, user.Email, user.FirstName, user.LastName,
+            token, expiresIn,
+            refreshToken, refreshTokenExpiration
+        );
         return Result.Succeed(response);
     }
 
@@ -57,13 +63,14 @@ public class AuthService(UserManager<ApplicationUser> UserManager, IJwtProvider 
         await _userManager.UpdateAsync(user);
 
         var result = new AuthResponse
-            (
-                user.Id, user.Email, user.FirstName, user.LastName,
-                newJwtToken, jwtTokenexpiresIn,
-                newRefreshToken, refreshTokenExpiration
-            );
+        (
+            user.Id, user.Email, user.FirstName, user.LastName,
+            newJwtToken, jwtTokenexpiresIn,
+            newRefreshToken, refreshTokenExpiration
+        );
         return Result.Succeed(result);
     }
+
     public async Task<Result> RevokeRefreshTokenAsync(string token, string refreshToken, CancellationToken cancellationToken = default)
     {
         var userId = _jwtProvider.ValidateToken(token);
@@ -80,6 +87,41 @@ public class AuthService(UserManager<ApplicationUser> UserManager, IJwtProvider 
         await _userManager.UpdateAsync(user);
 
         return Result.Succeed();
+    }
+
+    public async Task<Result<AuthResponse>> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default)
+    {
+        var EmailExists = await _userManager.Users.AnyAsync(u => u.Email == request.Email, cancellationToken);
+        if(EmailExists) return Result.Failure<AuthResponse>(UserErrors.EmailDuplicated);
+
+        var user = request.Adapt<ApplicationUser>();
+
+        var result = await _userManager.CreateAsync(user,request.Password);
+        if(result.Succeeded)
+        {
+            var (token, expiresIn) = _jwtProvider.GenerateToken(user);   // generate new Jwt Token
+
+            var refreshToken = GenerateRefreshToken();        // generate new Refresh Token
+            var refreshTokenExpiration = DateTime.UtcNow.AddDays(_refreshTokenExpiryDays);
+
+            user.RefreshTokens.Add(new RefreshToken
+            {
+                Token = refreshToken,
+                ExpiresOn = refreshTokenExpiration
+            });
+            await _userManager.UpdateAsync(user);
+
+            var response = new AuthResponse
+            (
+                user.Id, user.Email, user.FirstName, user.LastName,
+                token, expiresIn,
+                refreshToken, refreshTokenExpiration
+            );
+            return Result.Succeed(response);
+        }
+
+        var error = result.Errors.First();
+        return Result.Failure<AuthResponse>(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
     }
 
 

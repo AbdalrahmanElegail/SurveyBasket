@@ -6,6 +6,7 @@ global using Microsoft.Extensions.Options;
 global using Microsoft.AspNetCore.Authorization;
 global using System.IdentityModel.Tokens.Jwt;
 global using System.Security.Claims;
+global using System.Text;
 global using Mapster;
 global using MapsterMapper;
 global using Scalar.AspNetCore;

@@ -10,4 +10,7 @@ public static class UserErrors
 
     public static readonly Error InvalidRefreshToken = 
         new("User.InvalidRefreshToken", "Refresh token is not valid", StatusCodes.Status401Unauthorized);
+
+    public static readonly Error EmailDuplicated =
+        new("User.EmailDuplicated", "Another user With the same Email exists", StatusCodes.Status409Conflict);
 }
