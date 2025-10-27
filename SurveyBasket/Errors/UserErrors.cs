@@ -13,4 +13,13 @@ public static class UserErrors
 
     public static readonly Error EmailDuplicated =
         new("User.EmailDuplicated", "Another user With the same Email exists", StatusCodes.Status409Conflict);
+
+    public static readonly Error EmailNotConfirmed =
+        new("User.EmailNotConfirmed", "Email is not confirmed", StatusCodes.Status401Unauthorized);
+
+    public static readonly Error InvalidCode =
+        new("User.InvalidCode", "Invalid code", StatusCodes.Status401Unauthorized);
+
+    public static readonly Error DuplicatedEmailConfirmation =
+        new("User.DuplicatedEmailConfirmation", "Email already confirmed", StatusCodes.Status400BadRequest);
 }
