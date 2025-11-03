@@ -10,4 +10,7 @@ public static class VoteErrors
 
     public static readonly Error InvalidQuestions =
         new("Vote.InvalidQuestions", "Invalid Questions", StatusCodes.Status400BadRequest);
+
+    public static readonly Error AnswersDontBelongToQuestion =
+        new("Vote.AnswersDontBelongToQuestion", "Answers Don't Belong To it's Question", StatusCodes.Status400BadRequest);
 }

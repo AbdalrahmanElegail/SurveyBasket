@@ -24,6 +24,9 @@ public class VoteService(ApplicationDbContext context) : IVoteService
         if (!request.Answers.Select(a => a.QuestionId).ToList().SequenceEqual(availableQuestions))
             return Result.Failure(VoteErrors.InvalidQuestions);
 
+        //if (request.Answers.Any(ra => _context.Answers.Any(ca => ca.Id == ra.AnswerId && ca.QuestionId != ra.QuestionId)))
+        //    return Result.Failure(VoteErrors.AnswersDontBelongToQuestion);
+
         var vote = new Vote
         {
             PollId = pollId,

@@ -1,4 +1,5 @@
-﻿
+﻿using SurveyBasket.Abstractions.Consts;
+
 namespace SurveyBasket.Persistence.EntitiesConfigurations;
 
 public class UserConfiguration : IEntityTypeConfiguration<ApplicationUser>
@@ -11,5 +12,21 @@ public class UserConfiguration : IEntityTypeConfiguration<ApplicationUser>
 
         builder.Property(u => u.FirstName).HasMaxLength(100);
         builder.Property(u => u.LastName).HasMaxLength(100);
+
+        // Seed Admin User
+        builder.HasData(new ApplicationUser
+        {
+            Id = DefaultUsers.AdminId,
+            FirstName = DefaultUsers.AdminFirstName,
+            LastName = DefaultUsers.AdminLastName,
+            Email = DefaultUsers.AdminEmail,
+            UserName = DefaultUsers.AdminEmail,
+            NormalizedEmail = DefaultUsers.AdminEmail.ToUpper(),
+            NormalizedUserName = DefaultUsers.AdminEmail.ToUpper(),
+            SecurityStamp = DefaultUsers.AdminSecurityStamp,
+            ConcurrencyStamp = DefaultUsers.AdminConcurrencyStamp,
+            EmailConfirmed = true,
+            PasswordHash = DefaultUsers.AdminHashedPassword
+        });
     }
 }
