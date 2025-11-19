@@ -1,6 +1,4 @@
 ﻿using Microsoft.IdentityModel.Tokens;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
 using System.Text.Json;
 
 namespace SurveyBasket.Authentication;
@@ -34,7 +32,7 @@ public class JwtProvider(IOptions<JwtOptions> options) : IJwtProvider
 
         var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
-        return (token: tokenString,expiresIn: _options.ExpiryMinutes * 60); // return expiresIn in seconds
+        return (token: tokenString, expiresIn: _options.ExpiryMinutes * 60); // return expiresIn in seconds
     }
 
     public string? ValidateToken(string token)
