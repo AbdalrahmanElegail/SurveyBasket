@@ -73,11 +73,11 @@ public class RoleService(RoleManager<ApplicationRole> roleManager, ApplicationDb
 
         var roleExists = await _roleManager.Roles.AnyAsync(r => r.Name == request.Name && r.Id != id);
         if (roleExists)
-            return Result.Failure<RoleDetailsResponse>(RoleErrors.DuplicatedRole);
+            return Result.Failure(RoleErrors.DuplicatedRole);
 
         var allowedPermissions = Permissions.GetAllPermissions();
         if (request.Permissions.Except(allowedPermissions).Any())
-            return Result.Failure<RoleDetailsResponse>(RoleErrors.InvalidPermissions);
+            return Result.Failure(RoleErrors.InvalidPermissions);
 
         role.Name = request.Name;
 
@@ -112,6 +112,18 @@ public class RoleService(RoleManager<ApplicationRole> roleManager, ApplicationDb
 
         var error = result.Errors.First();
 
-        return Result.Failure<RoleDetailsResponse>(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
+        return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
+    }
+
+    public async Task<Result> ToggleStatusAsync(string id)
+    {
+        if (await _roleManager.FindByIdAsync(id) is not { } role)
+            return Result.Failure(RoleErrors.RoleNotFound);
+
+        role.IsDeleted = !role.IsDeleted;
+
+        await _roleManager.UpdateAsync(role);
+
+        return Result.Succeed();
     }
 }
