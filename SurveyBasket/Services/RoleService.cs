@@ -65,4 +65,53 @@ public class RoleService(RoleManager<ApplicationRole> roleManager, ApplicationDb
 
         return Result.Failure<RoleDetailsResponse>(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
     }
+
+    public async Task<Result> UpdateAsync(string id, RoleRequest request)
+    {
+        if (await _roleManager.FindByIdAsync(id) is not { } role)
+            return Result.Failure(RoleErrors.RoleNotFound);
+
+        var roleExists = await _roleManager.Roles.AnyAsync(r => r.Name == request.Name && r.Id != id);
+        if (roleExists)
+            return Result.Failure<RoleDetailsResponse>(RoleErrors.DuplicatedRole);
+
+        var allowedPermissions = Permissions.GetAllPermissions();
+        if (request.Permissions.Except(allowedPermissions).Any())
+            return Result.Failure<RoleDetailsResponse>(RoleErrors.InvalidPermissions);
+
+        role.Name = request.Name;
+
+        var result = await _roleManager.UpdateAsync(role);
+
+        if (result.Succeeded)
+        {
+            var currentPermissions = await _context.RoleClaims
+                .Where(rc => rc.RoleId == id && rc.ClaimType == Permissions.Type)
+                .Select(rc => rc.ClaimValue)
+                .ToListAsync();
+
+            var removedPermissions = currentPermissions.Except(request.Permissions);
+
+            await _context.RoleClaims
+                .Where(rc => rc.RoleId == id && removedPermissions.Contains(rc.ClaimValue))
+                .ExecuteDeleteAsync();
+
+            var AddedPermissions = request.Permissions.Except(currentPermissions)
+                .Select(p => new IdentityRoleClaim<string>
+                {
+                    ClaimType = Permissions.Type,
+                    ClaimValue = p,
+                    RoleId = role.Id
+                });
+
+            await _context.AddRangeAsync(AddedPermissions);
+            await _context.SaveChangesAsync();
+
+            return Result.Succeed();
+        }
+
+        var error = result.Errors.First();
+
+        return Result.Failure<RoleDetailsResponse>(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
+    }
 }
