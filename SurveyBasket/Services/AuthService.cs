@@ -27,12 +27,13 @@ public class AuthService(
 
     public async Task<Result<AuthResponse>> GetTokenAsync(string email, string password, CancellationToken cancellationToken = default)
     {
-        // if the result of _userManager.FindByEmailAsync(email) is an object, then create a variable and asign it
-        // if it is not an object: it means it is null, then return failure result
         if (await _userManager.FindByEmailAsync(email) is not{ } user)
             return Result.Failure<AuthResponse>(UserErrors.InvalidCredentials);
 
-        var result = await _signInManager.PasswordSignInAsync(user, password, false, false);
+        if(user.IsDisabled)
+            return Result.Failure<AuthResponse>(UserErrors.DisabledUser);
+
+        var result = await _signInManager.PasswordSignInAsync(user, password, false, true);
 
         if (result.Succeeded)
         {
@@ -59,7 +60,12 @@ public class AuthService(
             return Result.Succeed(response);
         }
 
-        return Result.Failure<AuthResponse>(result.IsNotAllowed ? UserErrors.EmailNotConfirmed : UserErrors.InvalidCredentials);
+        var error =
+            result.IsNotAllowed ? UserErrors.EmailNotConfirmed
+            : result.IsLockedOut ? UserErrors.LockedOut
+            : UserErrors.InvalidCredentials;
+
+        return Result.Failure<AuthResponse>(error);
     }
 
     public async Task<Result<AuthResponse>> GetRefreshTokenAsync(string token, string refreshToken, CancellationToken cancellationToken = default)
@@ -69,6 +75,12 @@ public class AuthService(
 
         var user = await _userManager.FindByIdAsync(userId);
         if (user is null) return Result.Failure<AuthResponse>(UserErrors.InvalidJwtToken);
+
+        if (user.IsDisabled)
+            return Result.Failure<AuthResponse>(UserErrors.DisabledUser);
+
+        if (DateTime.UtcNow < user.LockoutEnd)
+            return Result.Failure<AuthResponse>(UserErrors.LockedOut);
 
         var userRefreshToken = user.RefreshTokens.SingleOrDefault(t => t.Token == refreshToken);
         if (userRefreshToken is null) return Result.Failure<AuthResponse>(UserErrors.InvalidRefreshToken);

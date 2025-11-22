@@ -35,19 +35,7 @@ public static class DependencyInjection
             .AddMapsterConfigurations()
             .AddFluentValidationConfigurations();
 
-
-        //services.AddServices();
-        services.AddScoped<IPollService, PollService>();
-        services.AddScoped<IEmailSender, EmailService>();
-        services.AddScoped<INotificationService, NotificationService>();
-        services.AddScoped<IAuthService, AuthService>();
-        services.AddScoped<IUserService, UserService>();
-        services.AddScoped<IRoleService, RoleService>();
-        services.AddScoped<IQuestionService, QuestionService>();
-        services.AddScoped<IVoteService, VoteService>();
-        services.AddScoped<IResultService, ResultService>();
-
-        //services.AddScoped<ICacheService, CacheService>();
+        services.AddServices();
 
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();
@@ -69,17 +57,21 @@ public static class DependencyInjection
 
 
 
-    //public static IServiceCollection AddServices(this IServiceCollection services)
-    //{
-    //    services.AddScoped<IPollService, PollService>();
-    //    services.AddScoped<IAuthService, AuthService>();
-    //    services.AddScoped<IQuestionService, QuestionService>();
-    //    services.AddScoped<IVoteService, VoteService>();
-    //    services.AddScoped<IResultService, ResultService>();
+    public static IServiceCollection AddServices(this IServiceCollection services)
+    {
+        services.AddScoped<IPollService, PollService>();
+        services.AddScoped<IEmailSender, EmailService>();
+        services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IRoleService, RoleService>();
+        services.AddScoped<IQuestionService, QuestionService>();
+        services.AddScoped<IVoteService, VoteService>();
+        services.AddScoped<IResultService, ResultService>();
+        //services.AddScoped<ICacheService, CacheService>();
 
-    //    return services;
-    //}
-
+        return services;
+    }
 
     private static IServiceCollection AddDb(this IServiceCollection services, IConfiguration configuration)
     {
@@ -94,7 +86,6 @@ public static class DependencyInjection
 
     private static IServiceCollection AddMapsterConfigurations(this IServiceCollection services)
     {
-
         ////////////1st way///////
         //TypeAdapterConfig.GlobalSettings.Scan(assemblies: typeof(MappingConfigurations).Assembly);
 
@@ -184,19 +175,24 @@ public static class DependencyInjection
         return services;
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
     private static IServiceCollection CustomiseScalarJwtAuthentication(this IServiceCollection services)
     {
         services.AddOpenApi("v1", options => { options.AddDocumentTransformer<BearerSecuritySchemeTransformer>(); });
 
         return services;
     }
-
-
-
-
-
-
-
 
     private sealed class BearerSecuritySchemeTransformer(Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider authenticationSchemeProvider) : IOpenApiDocumentTransformer
     {
