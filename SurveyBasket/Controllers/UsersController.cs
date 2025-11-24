@@ -1,4 +1,6 @@
-﻿namespace SurveyBasket.Controllers;
+﻿using SurveyBasket.Contracts.Users;
+
+namespace SurveyBasket.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -17,5 +19,13 @@ public class UsersController(IUserService userService) : ControllerBase
     {
         var result = await _userService.GetAsync(id);
         return result.IsSucceed ? Ok(result.Value) : result.ToProblem();
+    }
+
+    [HttpPost("")]
+    [HasPermission(Permissions.AddUsers)]
+    public async Task<IActionResult> Add([FromBody] CreateUserRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _userService.AddAsync(request, cancellationToken);
+        return result.IsSucceed ? CreatedAtAction(nameof(Get), new {result.Value.Id}, result.Value) : result.ToProblem();
     }
 }

@@ -2,9 +2,12 @@
 
 namespace SurveyBasket.Services;
 
-public class UserService(UserManager<ApplicationUser> userManager, ApplicationDbContext context) : IUserService
+public class UserService(UserManager<ApplicationUser> userManager,
+    IRoleService roleService,
+    ApplicationDbContext context) : IUserService
 {
     private readonly UserManager<ApplicationUser> _userManager = userManager;
+    private readonly IRoleService _roleService = roleService;
     private readonly ApplicationDbContext _context = context;
 
     public async Task<IEnumerable<UserResponse>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -43,6 +46,34 @@ public class UserService(UserManager<ApplicationUser> userManager, ApplicationDb
         var response = (user, userRoles).Adapt<UserResponse>();
 
         return Result.Succeed(response);
+    }
+
+    public async Task<Result<UserResponse>> AddAsync(CreateUserRequest request, CancellationToken cancellationToken = default)
+    {
+        var emailExists = await _userManager.Users.AnyAsync(u => u.Email == request.Email, cancellationToken);
+        if (emailExists)
+            return Result.Failure<UserResponse>(UserErrors.EmailDuplicated);
+
+        var allowedRoles = await _roleService.GetAllAsync(cancellationToken : cancellationToken);
+
+        if (request.Roles.Except(allowedRoles.Select(r => r.Name)).Any())
+            return Result.Failure<UserResponse>(UserErrors.InvalidRoles);
+
+        var user = request.Adapt<ApplicationUser>();
+
+        var result = await _userManager.CreateAsync(user, request.Password);
+
+        if(result.Succeeded)
+        {
+            await _userManager.AddToRolesAsync(user, request.Roles);
+
+            var response = (user, request.Roles).Adapt<UserResponse>();
+
+            return Result.Succeed(response);
+        }
+
+        var error = result.Errors.First();
+        return Result.Failure<UserResponse>(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
     }
 
     public async Task<Result<UserProfileResponse>> GetProfileAsync(string userId)
