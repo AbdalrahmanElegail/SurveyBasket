@@ -21,5 +21,9 @@ public class MappingConfigurations : IRegister
             .Map(dest => dest, src => src.user)
             .Map(dest => dest.Roles, src => src.roles);
 
+        config.NewConfig<UpdateUserRequest, ApplicationUser>()
+            .Map(dest => dest.UserName, src => src.Email)
+            .Map(dest => dest.NormalizedUserName, src => src.Email.ToUpper());
+
     }
 }

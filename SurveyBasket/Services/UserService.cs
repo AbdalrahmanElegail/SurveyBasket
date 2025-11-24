@@ -55,7 +55,6 @@ public class UserService(UserManager<ApplicationUser> userManager,
             return Result.Failure<UserResponse>(UserErrors.EmailDuplicated);
 
         var allowedRoles = await _roleService.GetAllAsync(cancellationToken : cancellationToken);
-
         if (request.Roles.Except(allowedRoles.Select(r => r.Name)).Any())
             return Result.Failure<UserResponse>(UserErrors.InvalidRoles);
 
@@ -74,6 +73,38 @@ public class UserService(UserManager<ApplicationUser> userManager,
 
         var error = result.Errors.First();
         return Result.Failure<UserResponse>(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
+    }
+
+    public async Task<Result> UpdateAsync(string id, UpdateUserRequest request, CancellationToken cancellationToken = default)
+    {
+        if(await _userManager.FindByIdAsync(id) is not { } user)
+            return Result.Failure(UserErrors.UserNotFound);
+
+        var emailExists = await _userManager.Users.AnyAsync(u => u.Email == request.Email && u.Id != id, cancellationToken);
+        if (emailExists)
+            return Result.Failure(UserErrors.EmailDuplicated);
+
+        var allowedRoles = await _roleService.GetAllAsync(cancellationToken: cancellationToken);
+        if (request.Roles.Except(allowedRoles.Select(r => r.Name)).Any())
+            return Result.Failure(UserErrors.InvalidRoles);
+
+        user = request.Adapt(user);
+
+        var result = await _userManager.UpdateAsync(user);
+
+        if (result.Succeeded)
+        {
+            await _context.UserRoles
+                .Where(ur => ur.UserId == id)
+                .ExecuteDeleteAsync(cancellationToken);
+
+            await _userManager.AddToRolesAsync(user, request.Roles);
+
+            return Result.Succeed();
+        }
+
+        var error = result.Errors.First();
+        return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
     }
 
     public async Task<Result<UserProfileResponse>> GetProfileAsync(string userId)
