@@ -5,6 +5,9 @@ public static class UserErrors
     public static readonly Error InvalidCredentials = 
         new("User.InvalidCredentials", "Incorrect Email or Password", StatusCodes.Status401Unauthorized);
 
+    public static readonly Error UserNotFound =
+        new("User.NotFound", "The user with the specified ID was not found.", StatusCodes.Status404NotFound);
+
     public static readonly Error LockedOut =
         new("User.LockedOut", "Locked Out, try again later", StatusCodes.Status401Unauthorized);
 

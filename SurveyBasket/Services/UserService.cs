@@ -33,6 +33,18 @@ public class UserService(UserManager<ApplicationUser> userManager, ApplicationDb
                       u.SelectMany(u => u.Roles)
                   )).ToListAsync(cancellationToken);
 
+    public async Task<Result<UserResponse>> GetAsync(string id)
+    {
+        if (await _userManager.FindByIdAsync(id) is not { } user)
+            return Result.Failure<UserResponse>(UserErrors.UserNotFound);
+
+        var userRoles = await _userManager.GetRolesAsync(user);
+
+        var response = (user, userRoles).Adapt<UserResponse>();
+
+        return Result.Succeed(response);
+    }
+
     public async Task<Result<UserProfileResponse>> GetProfileAsync(string userId)
     {
         var user = await _userManager.Users
