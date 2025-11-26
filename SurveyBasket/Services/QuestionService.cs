@@ -1,9 +1,8 @@
-﻿using Azure.Core;
-using Microsoft.Extensions.Caching.Hybrid;
+﻿using Microsoft.Extensions.Caching.Hybrid;
 using SurveyBasket.Contracts.Answers;
 using SurveyBasket.Contracts.Common;
 using SurveyBasket.Contracts.Questions;
-using System.Collections.Generic;
+using System.Linq.Dynamic.Core;
 
 namespace SurveyBasket.Services;
 
@@ -26,12 +25,19 @@ public class QuestionService(
         if (!pollExists) return Result.Failure<PaginatedList<QuestionResponse>>(PollErrors.PollNotFound);
 
         var query = _context.Questions
-            .Where(q => q.PollId == pollId && (string.IsNullOrEmpty(filters.SearchValue) || q.Content.Contains(filters.SearchValue)))
-            .Include(q => q.Answers)
-            .ProjectToType<QuestionResponse>()
-            .AsNoTracking();
+            .Where(q => q.PollId == pollId);
 
-        var questions = await PaginatedList<QuestionResponse>.CreateAsync(query, filters.PageNumber, filters.PageSize, cancellationToken);
+        if (!string.IsNullOrEmpty(filters.SearchValue))
+            query = query.Where(q => q.Content.Contains(filters.SearchValue));
+
+        if (!string.IsNullOrEmpty(filters.SortColumn))
+            query = query.OrderBy($"{filters.SortColumn} {filters.SortDirection}");
+
+        var source = query.Include(q => q.Answers)
+                        .ProjectToType<QuestionResponse>()
+                        .AsNoTracking();
+
+        var questions = await PaginatedList<QuestionResponse>.CreateAsync(source, filters.PageNumber, filters.PageSize, cancellationToken);
 
         return Result.Succeed(questions);
     }
