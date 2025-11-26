@@ -26,7 +26,7 @@ public class QuestionService(
         if (!pollExists) return Result.Failure<PaginatedList<QuestionResponse>>(PollErrors.PollNotFound);
 
         var query = _context.Questions
-            .Where(q => q.PollId == pollId)
+            .Where(q => q.PollId == pollId && (string.IsNullOrEmpty(filters.SearchValue) || q.Content.Contains(filters.SearchValue)))
             .Include(q => q.Answers)
             .ProjectToType<QuestionResponse>()
             .AsNoTracking();
