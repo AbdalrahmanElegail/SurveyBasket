@@ -47,6 +47,8 @@ public static class DependencyInjection
 
         services.CustomiseScalarJwtAuthentication();
 
+        services.AddHealthChecks();
+
         return services;
     }
 

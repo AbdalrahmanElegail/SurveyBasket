@@ -59,6 +59,8 @@ public class Program
 
         app.UseExceptionHandler();
 
+        app.MapHealthChecks("health");
+
         app.Run();
     }
 }
