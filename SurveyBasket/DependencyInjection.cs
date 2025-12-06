@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using SurveyBasket.Health;
 using SurveyBasket.Settings;
 
 namespace SurveyBasket;
@@ -50,7 +51,8 @@ public static class DependencyInjection
         services.AddHealthChecks()
             .AddSqlServer(name: "Database", connectionString: configuration.GetConnectionString("DefaultConnection") ??
             throw new InvalidOperationException("Connection string 'DefaultConnection' not found."))
-            .AddHangfire(options => { options.MinimumAvailableServers = 100; });
+            .AddHangfire(options => { options.MinimumAvailableServers = 1; })
+            .AddCheck<MailProviderHealthCheck>(name: "Mail Service");
 
         return services;
     }
