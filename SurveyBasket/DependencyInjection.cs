@@ -49,8 +49,8 @@ public static class DependencyInjection
         services.CustomiseScalarJwtAuthentication();
 
         services.AddHealthChecks()
-            .AddSqlServer(name: "Database", connectionString: configuration.GetConnectionString("DefaultConnection") ??
-            throw new InvalidOperationException("Connection string 'DefaultConnection' not found."))
+            .AddSqlServer(name: "Database", connectionString: (configuration.GetConnectionString("DefaultConnection") ??
+            throw new InvalidOperationException("Connection string 'DefaultConnection' not found.")), tags: ["database"])
             .AddHangfire(options => { options.MinimumAvailableServers = 1; })
             .AddCheck<MailProviderHealthCheck>(name: "Mail Service");
 

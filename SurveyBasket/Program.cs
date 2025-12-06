@@ -66,6 +66,12 @@ public class Program
             ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
         });
 
+        app.MapHealthChecks("health-check-database", new HealthCheckOptions
+        {
+            Predicate = h => h.Tags.Contains("database"),
+            ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+        });
+
         app.Run();
     }
 }
