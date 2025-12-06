@@ -1,6 +1,8 @@
 using Hangfire;
 using Hangfire.Dashboard;
 using HangfireBasicAuthenticationFilter;
+using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Serilog;
 
 namespace SurveyBasket;
@@ -59,7 +61,10 @@ public class Program
 
         app.UseExceptionHandler();
 
-        app.MapHealthChecks("health");
+        app.MapHealthChecks("health", new HealthCheckOptions 
+        {
+            ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+        });
 
         app.Run();
     }

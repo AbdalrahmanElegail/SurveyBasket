@@ -47,7 +47,9 @@ public static class DependencyInjection
 
         services.CustomiseScalarJwtAuthentication();
 
-        services.AddHealthChecks();
+        services.AddHealthChecks()
+            .AddSqlServer(name: "Database", connectionString: configuration.GetConnectionString("DefaultConnection") ??
+            throw new InvalidOperationException("Connection string 'DefaultConnection' not found."));
 
         return services;
     }
