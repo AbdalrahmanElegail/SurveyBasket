@@ -49,7 +49,8 @@ public static class DependencyInjection
 
         services.AddHealthChecks()
             .AddSqlServer(name: "Database", connectionString: configuration.GetConnectionString("DefaultConnection") ??
-            throw new InvalidOperationException("Connection string 'DefaultConnection' not found."));
+            throw new InvalidOperationException("Connection string 'DefaultConnection' not found."))
+            .AddHangfire(options => { options.MinimumAvailableServers = 100; });
 
         return services;
     }
