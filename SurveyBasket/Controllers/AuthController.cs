@@ -1,4 +1,5 @@
-﻿using SurveyBasket.Contracts.Users;
+﻿using Microsoft.AspNetCore.RateLimiting;
+using SurveyBasket.Contracts.Users;
 
 namespace SurveyBasket.Controllers;
 
@@ -70,5 +71,14 @@ public class AuthController(IAuthService AuthService) : ControllerBase
         var result = await _authService.ResetPasswordAsync(request);
 
         return result.IsSucceed ? Ok() : result.ToProblem();
+    }
+
+
+    [HttpGet("test")]
+    [EnableRateLimiting("concurrency")]
+    public async Task<IActionResult> Test()
+    {
+        Thread.Sleep(8000);
+        return Ok();
     }
 }

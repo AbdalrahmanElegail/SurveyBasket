@@ -2,10 +2,12 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.OpenApi;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using SurveyBasket.Health;
 using SurveyBasket.Settings;
+using System.Threading.RateLimiting;
 
 namespace SurveyBasket;
 
@@ -53,6 +55,18 @@ public static class DependencyInjection
             throw new InvalidOperationException("Connection string 'DefaultConnection' not found.")), tags: ["database"])
             .AddHangfire(options => { options.MinimumAvailableServers = 1; })
             .AddCheck<MailProviderHealthCheck>(name: "Mail Service");
+
+        services.AddRateLimiter(rateLimiterOptions =>
+        {
+            rateLimiterOptions.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+            rateLimiterOptions.AddConcurrencyLimiter("concurrency", options =>
+            {
+                options.PermitLimit = 2;
+                options.QueueLimit = 1;
+                options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+            });
+        });
 
         return services;
     }
