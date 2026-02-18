@@ -60,12 +60,51 @@ public static class DependencyInjection
         {
             rateLimiterOptions.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-            rateLimiterOptions.AddConcurrencyLimiter("concurrency", options =>
-            {
-                options.PermitLimit = 2;
-                options.QueueLimit = 1;
-                options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-            });
+            rateLimiterOptions.AddPolicy("ipLimit", httpContext =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: httpContext.Connection.RemoteIpAddress?.ToString(),
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 2,
+                        Window = TimeSpan.FromSeconds(20)
+                    }
+                )
+            );
+
+            //rateLimiterOptions.AddConcurrencyLimiter("concurrency", options =>
+            //{
+            //    options.PermitLimit = 2;
+            //    options.QueueLimit = 1;
+            //    options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+            //});
+
+            //rateLimiterOptions.AddTokenBucketLimiter("token", options =>
+            //{
+            //    options.TokenLimit = 2;
+            //    options.QueueLimit = 1;
+            //    options.TokensPerPeriod = 2;
+            //    options.AutoReplenishment = true;
+            //    options.ReplenishmentPeriod = TimeSpan.FromSeconds(10);
+            //    options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+            //});
+
+            //rateLimiterOptions.AddFixedWindowLimiter("fixedWindow", options =>
+            //{
+            //    options.PermitLimit = 2;
+            //    options.Window = TimeSpan.FromSeconds(10);
+            //    options.QueueLimit = 1;
+            //    options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+            //});
+
+            //rateLimiterOptions.AddSlidingWindowLimiter("slidingWindow", options =>
+            //{
+            //    options.PermitLimit = 6;
+            //    options.Window = TimeSpan.FromSeconds(30);
+            //    options.SegmentsPerWindow = 3;
+            //    options.QueueLimit = 1;
+            //    options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+            //});
+
         });
 
         return services;
