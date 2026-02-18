@@ -56,67 +56,7 @@ public static class DependencyInjection
             .AddHangfire(options => { options.MinimumAvailableServers = 1; })
             .AddCheck<MailProviderHealthCheck>(name: "Mail Service");
 
-        services.AddRateLimiter(rateLimiterOptions =>
-        {
-            rateLimiterOptions.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-
-            rateLimiterOptions.AddPolicy("userLimit", httpContext =>
-                RateLimitPartition.GetFixedWindowLimiter(
-                    partitionKey: httpContext.User.GetUserId(),
-                    factory: _ => new FixedWindowRateLimiterOptions
-                    {
-                        PermitLimit = 2,
-                        Window = TimeSpan.FromSeconds(20)
-                    }
-                )
-            );
-
-            rateLimiterOptions.AddPolicy("ipLimit", httpContext =>
-                RateLimitPartition.GetFixedWindowLimiter(
-                    partitionKey: httpContext.Connection.RemoteIpAddress?.ToString(),
-                    factory: _ => new FixedWindowRateLimiterOptions
-                    {
-                        PermitLimit = 2,
-                        Window = TimeSpan.FromSeconds(20)
-                    }
-                )
-            );
-
-            //rateLimiterOptions.AddConcurrencyLimiter("concurrency", options =>
-            //{
-            //    options.PermitLimit = 2;
-            //    options.QueueLimit = 1;
-            //    options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-            //});
-
-            //rateLimiterOptions.AddTokenBucketLimiter("token", options =>
-            //{
-            //    options.TokenLimit = 2;
-            //    options.QueueLimit = 1;
-            //    options.TokensPerPeriod = 2;
-            //    options.AutoReplenishment = true;
-            //    options.ReplenishmentPeriod = TimeSpan.FromSeconds(10);
-            //    options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-            //});
-
-            //rateLimiterOptions.AddFixedWindowLimiter("fixedWindow", options =>
-            //{
-            //    options.PermitLimit = 2;
-            //    options.Window = TimeSpan.FromSeconds(10);
-            //    options.QueueLimit = 1;
-            //    options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-            //});
-
-            //rateLimiterOptions.AddSlidingWindowLimiter("slidingWindow", options =>
-            //{
-            //    options.PermitLimit = 6;
-            //    options.Window = TimeSpan.FromSeconds(30);
-            //    options.SegmentsPerWindow = 3;
-            //    options.QueueLimit = 1;
-            //    options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-            //});
-
-        });
+        services.AddRateLimitersConfigurations();
 
         return services;
     }
@@ -246,7 +186,71 @@ public static class DependencyInjection
         return services;
     }
 
+    private static IServiceCollection AddRateLimitersConfigurations(this IServiceCollection services)
+    {
+        services.AddRateLimiter(rateLimiterOptions =>
+        {
+            rateLimiterOptions.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
+            rateLimiterOptions.AddPolicy(RateLimiters.UserLimiter, httpContext =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: httpContext.User.GetUserId(),
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 2,
+                        Window = TimeSpan.FromSeconds(20)
+                    }
+                )
+            );
+
+            rateLimiterOptions.AddPolicy(RateLimiters.IpLimiter, httpContext =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: httpContext.Connection.RemoteIpAddress?.ToString(),
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 2,
+                        Window = TimeSpan.FromSeconds(20)
+                    }
+                )
+            );
+
+            rateLimiterOptions.AddConcurrencyLimiter(RateLimiters.ConcurrencyLimiter, options =>
+            {
+                options.PermitLimit = 500;
+                options.QueueLimit = 100;
+                options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+            });
+
+            //rateLimiterOptions.AddTokenBucketLimiter(RateLimiters.TokenLimiter, options =>
+            //{
+            //    options.TokenLimit = 2;
+            //    options.QueueLimit = 1;
+            //    options.TokensPerPeriod = 2;
+            //    options.AutoReplenishment = true;
+            //    options.ReplenishmentPeriod = TimeSpan.FromSeconds(10);
+            //    options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+            //});
+
+            //rateLimiterOptions.AddFixedWindowLimiter(RateLimiters.FixedWindowLimiter, options =>
+            //{
+            //    options.PermitLimit = 2;
+            //    options.Window = TimeSpan.FromSeconds(10);
+            //    options.QueueLimit = 1;
+            //    options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+            //});
+
+            //rateLimiterOptions.AddSlidingWindowLimiter(RateLimiters.SlidingWindowLimiter, options =>
+            //{
+            //    options.PermitLimit = 6;
+            //    options.Window = TimeSpan.FromSeconds(30);
+            //    options.SegmentsPerWindow = 3;
+            //    options.QueueLimit = 1;
+            //    options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+            //});
+        });
+
+        return services;
+    }
 
 
 
